@@ -1,0 +1,49 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: volume-empty
+  name: volume-empty
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: volume-empty
+  template:
+    metadata:
+      labels:
+        run: volume-empty
+    spec:
+      containers:
+      - image: nginx
+        name: web-server
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+      - image: luksa/fortune
+        name: html-generator
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: html
+          mountPath: /var/htdocs
+      volumes:
+      - name: html
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: volume-empty
+  name: volume-empty
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: volume-empty

@@ -1,0 +1,67 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: volume-git-sync
+  name: volume-git-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: volume-git-sync
+  template:
+    metadata:
+      labels:
+        run: volume-git-sync
+    spec:
+      containers:
+      - image: nginx
+        name: web-server
+        imagePullPolicy: IfNotPresent
+        ports: 
+        - containerPort: 80 
+          protocol: TCP 
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+          #readOnly: true
+      - name: git-sync
+        image: openweb/git-sync
+        imagePullPolicy: IfNotPresent
+        env: 
+        - name: GIT_SYNC_REPO
+          value: "https://github.com/sandeeplamb/kubetest.git"
+        - name: GIT_SYNC_DEST
+          value: "/html"
+        - name: GIT_SYNC_BRANCH
+          value: "master"
+        - name: GIT_SYNC_REV
+          value: "FETCH_HEAD"
+        - name: GIT_SYNC_WAIT
+          value: "10" 
+        volumeMounts:
+        - name: html
+          mountPath: /html
+          readOnly: false
+      volumes:
+      - name: html
+        gitRepo:
+          repository: https://github.com/sandeeplamb/kubetest.git
+          revision: master
+          directory: .
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: volume-git-sync
+  name: volume-git-sync
+spec:
+  type: NodePort
+  ports:
+  - port: 8081
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: volume-git-sync
