@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/kubernetes.jpg"> </image>
+  <img src="img/kubernetes.jpg" width="285"> </image>
 </p>
 
 # Kubernetes Manifests
