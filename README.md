@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="img/kubernetes.jpg"> </image>
+</p>
+
 # Kubernetes Manifests
 There are manifests for ready-to-use in MiniKube.
 
