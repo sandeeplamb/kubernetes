@@ -1,0 +1,39 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: docker-secret
+  name: docker-secret
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: docker-secret
+  template:
+    metadata:
+      labels:
+        run: docker-secret
+    spec:
+      imagePullSecrets:
+      - name: dhub-secret
+      containers:
+      - image: sandeeplamb/kube-private
+        name: private-image
+        imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: docker-secret-svc
+  name: docker-secret-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 8888
+    name: http
+    protocol: TCP
+    targetPort: 8888
+  selector:
+    run: docker-secret
