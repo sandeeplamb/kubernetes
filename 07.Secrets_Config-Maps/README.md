@@ -47,3 +47,7 @@ I pushed searx image to my private repo. Searx is Meta-Search-Engine.
 To create the kubernetes resources, run the command
 
 `kubectl create -f .`
+
+To check the service running on both http and https port, run the command.
+
+`minikube service docker-secret-svc`
