@@ -46,6 +46,8 @@ and send just
 
 `root@curl:/# curl https://kubernetes`
 
+There will be unauthorized error but we will solve this in next step.
+
 #### 03. Authenticating with API-Server
 
 We should make TOKEN an environment vairables and sent request to API-Server using curl.
