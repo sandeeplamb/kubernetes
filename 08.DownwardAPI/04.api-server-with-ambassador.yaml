@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    key1: value1
+  name: connect-api-server-ambassador
+spec:
+  containers:
+  - image: tutum/curl
+    name: curl-api-server
+    imagePullPolicy: IfNotPresent
+    command: ["sleep", "9999999"]
+  - image: luksa/kubectl-proxy:1.6.2
+    name: curl-api-server-ambassador
+    imagePullPolicy: IfNotPresent
+  restartPolicy: Never

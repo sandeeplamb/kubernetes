@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    key1: value1
+  name: connect-api-server
+spec:
+  containers:
+  - image: tutum/curl
+    name: curl-api-server
+    imagePullPolicy: IfNotPresent
+    command: ["sleep", "9999999"]
+  restartPolicy: Never
