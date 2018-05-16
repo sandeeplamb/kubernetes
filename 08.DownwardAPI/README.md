@@ -1,53 +1,65 @@
-# Kubernetes Manifests for Secrets and Config-Maps
+# Kubernetes Manifests for Downward-API
 
-These are examples for using Secrets and Config-Maps in K8s.
+These are examples for using Downward-API as environment variables or as Files to access Pod data.
 
-### 01. Manifests for Creating ConfigMap
+### 01. Manifests for accessing Pod data as environment variables
 
-Files 01.config-map-nginx-config.conf contains the nginx SSL configuration that we will mount in nginx container at **/etc/nginx/conf.d**
+`kubectl create -f 01.downwardAPI_env.yaml`
 
-Command used to create the 03.create-configmap.yaml, Config-Map is :
+### 02. Manifests for accessing Pod data as files after mounting downwardAPI volume.
 
-`kubectl create configmap cmap --from-file=01.config-map-nginx-config.conf --from-file=02.config-map-sleep-interval -o yaml --dry-run > 03.creeate-configmap.yaml`
+`kubectl create -f 03.downwardAPI_volume.yaml`
 
-### 02. Manifests for Creating Secret
+### 03. Manifests for accessing API-Server api's using curl command.
 
-We created first self-signed-certificates using script **04.create-self-signed-certs.sh**
+We will create a Pod with one container. After creating Pod, we will create 2 environment variable in the container to access the API-Server from container using curl.
 
-Command used to create **09.create-secret.yaml**, Secret is :
+Create the Pod.
 
-`kubectl create secret generic sec-ret --from-file=05.https.key --from-file=06.https.cert --from-file=07.bar -o yaml --dry-run > 09.create-secret.yaml`
+`kubectl create -f 03.api-server.yaml`
 
-### 03. Manifests for using Secrets and Config-Maps as Volumes in a Pod.
+There are 3 steps in accessing the API-Server on Master Node.
 
-We created a simple nginx container and mounted the Config-Maps and Secrets in it.
+1. Find Location of API-Server.
+1. Verifying the API-Server Identity.
+1. Authenticating with API-Server.
 
-To create the kubernetes resources, run the command
+#### 01.Find Location of API-Server
 
-`kubectl create -f .`
+This can be find out using container Environmental variables.
 
-To check the service running on both http and https port, run the command.
+`root@curl:/# env | grep KUBERNETES_SERVICES`
 
-`minikube service secret-cmap-svc`
+#### 02. Verifying the API-Server Identity
 
-Change protocol to HTTPS from HTTP for one service tab in browser.
+Default Secret Volumes mounted at **/var/run/secrets/kubernetes.io/serviceaccount/** contains the **cacert** which was used to sign the API-Server's certificate.
 
-### 04. Manifests to create Image-Pull-Secret for Private-Docker-Registeries.
+We can send the command like
 
-Run the below command to create Private-Docker-Registery secret.
+`root@curl:/# curl --cacert=/var/run/secrets/kubernetes.io/serviceaccount/cacert https://kubernetes`
 
-`kubectl create secret docker-registry dhub-secret --docker-username=username --docker-password=password --docker-email=username@coolmail.com -o yaml --dry-run > 11.create-docker-image-pull-secret.yaml`
+Or use the environment variable **CURL_CA_BUNDLE**
 
-### 05. Manifests to create Image-Pull-Secret Pod.
+`root@curl:/# export CURL_CA_BUNDLE=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt`
 
-You need to create a Private Repo in docker-Hub and push one image to private repo.
+and send just
 
-I pushed searx image to my private repo. Searx is Meta-Search-Engine.
+`root@curl:/# curl https://kubernetes`
 
-To create the kubernetes resources, run the command
+#### 03. Authenticating with API-Server
 
-`kubectl create -f .`
+We should make TOKEN an environment vairables and sent request to API-Server using curl.
 
-To check the service running on both http and https port, run the command.
+`root@curl:/# export TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)`
 
-`minikube service docker-secret-svc`
+`root@curl:/# curl -H "Authorization: Bearer $TOKEN" https://kubernetes`
+
+### 04. Manifests to access API-Server using ambassador container without worrying about above steps.
+
+We will use another SideCar Container i.e. Ambassador Container in the same Pod who will do the heavy lifting of API-Server identification and authorization.
+
+`kubectl create -f 04.api-server-with-ambassador.yaml`
+
+`kubectl exec -it curl-api-server-ambassador /bin/bash`
+
+`root@connect-api-server-ambassador:/# curl localhost:8001`
