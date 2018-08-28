@@ -5,8 +5,8 @@
 # Kubernetes Manifests
 There are manifests for ready-to-use in MiniKube.
 
-It's really helpful if you are newbie and learning K8s.
+I used them while preparing for CKA exam that I already cleared.
 
-Very good for learning curve of K8s.
+The manisfests are very basic to start learning kubernetes.
 
 ### Manifests 
